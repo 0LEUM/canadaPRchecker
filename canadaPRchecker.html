@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Canada PR Eligibility Checker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Reset & scope ────────────────────────────────────────── */
+    .cpr-widget *, .cpr-widget *::before, .cpr-widget *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+    }
+
+    /* ── CSS Variables ────────────────────────────────────────── */
+    .cpr-widget {
+      --red:    #D52B1E;
+      --red-dk: #A8221A;
+      --white:  #FFFFFF;
+      --snow:   #F8F6F2;
+      --slate:  #1A1F2E;
+      --mist:   #6B7280;
+      --border: #E2DDD8;
+      --radius: 16px;
+      --shadow: 0 8px 40px rgba(26,31,46,.12);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--slate);
+    }
+
+    /* ── Card shell ───────────────────────────────────────────── */
+    .cpr-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    .cpr-header {
+      background: var(--slate);
+      padding: 36px 36px 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cpr-header::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: var(--red);
+      border-radius: 50%;
+      opacity: .18;
+    }
+    .cpr-header::after {
+      content: '🍁';
+      position: absolute;
+      top: 18px; right: 28px;
+      font-size: 48px;
+      opacity: .35;
+      line-height: 1;
+    }
+    .cpr-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 8px;
+    }
+    .cpr-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(22px, 5vw, 28px);
+      color: var(--white);
+      line-height: 1.25;
+    }
+    .cpr-subtitle {
+      margin-top: 8px;
+      font-size: 13.5px;
+      color: rgba(255,255,255,.6);
+      font-weight: 300;
+      line-height: 1.5;
+    }
+
+    /* ── Body ─────────────────────────────────────────────────── */
+    .cpr-body { padding: 32px 36px 36px; }
+
+    /* ── Progress dots ───────────────────────────────────────── */
+    .cpr-progress {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .cpr-dot {
+      height: 4px;
+      flex: 1;
+      border-radius: 2px;
+      background: var(--border);
+      transition: background .4s;
+    }
+    .cpr-dot.active { background: var(--red); }
+
+    /* ── Question groups ─────────────────────────────────────── */
+    .cpr-group { margin-bottom: 22px; }
+    .cpr-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--slate);
+      margin-bottom: 8px;
+      letter-spacing: .01em;
+    }
+    .cpr-label-icon {
+      width: 26px; height: 26px;
+      border-radius: 6px;
+      background: var(--snow);
+      display: grid; place-items: center;
+      font-size: 13px;
+    }
+    .cpr-select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--snow);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14.5px;
+      color: var(--slate);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    .cpr-select:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(213,43,30,.1);
+    }
+    .cpr-select option[value=""] { color: var(--mist); }
+
+    /* ── CTA button ──────────────────────────────────────────── */
+    .cpr-btn {
+      width: 100%;
+      padding: 15px 24px;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      cursor: pointer;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      margin-top: 8px;
+      box-shadow: 0 4px 16px rgba(213,43,30,.35);
+    }
+    .cpr-btn:hover  { background: var(--red-dk); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(213,43,30,.45); }
+    .cpr-btn:active { transform: translateY(0); }
+    .cpr-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* ── Result panel ────────────────────────────────────────── */
+    .cpr-result {
+      display: none;
+      margin-top: 24px;
+      border-radius: 12px;
+      padding: 22px 22px 22px 20px;
+      border-left: 4px solid;
+      animation: slideIn .4s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .cpr-result.eligible   { background: #F0FDF4; border-color: #16A34A; }
+    .cpr-result.partial    { background: #FFFBEB; border-color: #D97706; }
+    .cpr-result.ineligible { background: #FEF2F2; border-color: var(--red); }
+
+    .cpr-result-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .cpr-result-emoji { font-size: 22px; line-height: 1; }
+    .cpr-result-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+    .cpr-result.eligible   .cpr-result-title { color: #166534; }
+    .cpr-result.partial    .cpr-result-title { color: #92400E; }
+    .cpr-result.ineligible .cpr-result-title { color: var(--red-dk); }
+
+    .cpr-result-body {
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--slate);
+    }
+    .cpr-result-cta {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--red);
+      text-decoration: none;
+      letter-spacing: .03em;
+    }
+
+    /* ── Footer note ─────────────────────────────────────────── */
+    .cpr-footer {
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--mist);
+      padding: 16px 36px 24px;
+      border-top: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    /* ── Mobile tweaks ───────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .cpr-header { padding: 28px 22px 24px; }
+      .cpr-body   { padding: 24px 22px 28px; }
+      .cpr-footer { padding: 14px 22px 20px; }
+    }
+  </style>
+</head>
+<body style="min-height:100vh;display:grid;place-items:center;background:#F0EDE8;padding:24px;">
+
+<!-- ══════════════════════════════════════════════
+     WIDGET  — copy everything inside .cpr-widget
+     into an Elementor Custom HTML block
+════════════════════════════════════════════════ -->
+<div class="cpr-widget" style="width:100%;max-width:580px;">
+
+  <div class="cpr-card">
+
+    <!-- Header -->
+    <div class="cpr-header">
+      <p class="cpr-eyebrow">Immigration Tool</p>
+      <h1 class="cpr-title">Canada PR<br>Eligibility Checker</h1>
+      <p class="cpr-subtitle">Answer 3 quick questions to get a personalised assessment of your Express Entry prospects.</p>
+    </div>
+
+    <!-- Body -->
+    <div class="cpr-body">
+
+      <!-- Progress indicator -->
+      <div class="cpr-progress" id="cprProgress">
+        <div class="cpr-dot" id="dot1"></div>
+        <div class="cpr-dot" id="dot2"></div>
+        <div class="cpr-dot" id="dot3"></div>
+      </div>
+
+      <!-- Q1: Age -->
+      <div class="cpr-group">
+        <label class="cpr-label" for="cprAge">
+          <span class="cpr-label-icon">🎂</span> Your Age Range
+        </label>
+        <select class="cpr-select" id="cprAge" onchange="cprUpdate()">
+          <option value="">Select your age…</option>
+          <option value="3">18 – 29  (optimal scoring bracket)</option>
+          <option value="2">30 – 35  (strong scoring bracket)</option>
+          <option value="1">36 – 44  (moderate scoring bracket)</option>
+          <option value="0">45 +       (limited points available)</option>
+        </select>
+      </div>
+
+      <!-- Q2: Education -->
+      <div class="cpr-group">
+        <label class="cpr-label" for="cprEdu">
+          <span class="cpr-label-icon">🎓</span> Highest Education Level
+        </label>
+        <select class="cpr-select" id="cprEdu" onchange="cprUpdate()">
+          <option value="">Select education level…</option>
+          <option value="3">Master's / PhD</option>
+          <option value="2">Bachelor's Degree (3–4 yr)</option>
+          <option value="1">Diploma / Certificate</option>
+          <option value="0">High School or below</option>
+        </select>
+      </div>
+
+      <!-- Q3: English (CLB / IELTS proxy) -->
+      <div class="cpr-group">
+        <label class="cpr-label" for="cprEng">
+          <span class="cpr-label-icon">🗣️</span> English Proficiency (CLB Level)
+        </label>
+        <select class="cpr-select" id="cprEng" onchange="cprUpdate()">
+          <option value="">Select language level…</option>
+          <option value="3">CLB 9 + (IELTS 7.5+ in each band)</option>
+          <option value="2">CLB 7 – 8  (IELTS ~6.5 – 7.0)</option>
+          <option value="1">CLB 5 – 6  (IELTS ~5.0 – 6.0)</option>
+          <option value="0">Below CLB 5</option>
+        </select>
+      </div>
+
+      <!-- CTA -->
+      <button class="cpr-btn" id="cprBtn" onclick="cprCalculate()" disabled>
+        Check My Eligibility →
+      </button>
+
+      <!-- Result -->
+      <div class="cpr-result" id="cprResult">
+        <div class="cpr-result-head">
+          <span class="cpr-result-emoji" id="cprEmoji"></span>
+          <span class="cpr-result-title" id="cprResultTitle"></span>
+        </div>
+        <p class="cpr-result-body" id="cprResultBody"></p>
+        <a class="cpr-result-cta" href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry.html" target="_blank" rel="noopener">
+          Learn about Express Entry on Canada.ca →
+        </a>
+      </div>
+
+    </div><!-- /body -->
+
+    <!-- Footer -->
+    <div class="cpr-footer">
+      ⚠️ This tool provides a general estimate only and is not legal or immigration advice.<br>
+      Consult a certified RCIC for a full CRS score assessment.
+    </div>
+
+  </div><!-- /card -->
+</div><!-- /widget -->
+
+<script>
+(function () {
+
+  /* ── Helpers ─────────────────────────────────────────── */
+  function val(id) {
+    const el = document.getElementById(id);
+    return el && el.value !== '' ? parseInt(el.value, 10) : null;
+  }
+
+  /* ── Update progress dots + button state ─────────────── */
+  window.cprUpdate = function () {
+    const a = val('cprAge'), e = val('cprEdu'), l = val('cprEng');
+    const filled = [a, e, l].filter(v => v !== null).length;
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById('dot' + i).classList.toggle('active', i <= filled);
+    }
+    document.getElementById('cprBtn').disabled = !(a !== null && e !== null && l !== null);
+    // hide old result when user changes a field
+    document.getElementById('cprResult').style.display = 'none';
+  };
+
+  /* ── Outcome lookup table ─────────────────────────────── */
+  const outcomes = [
+    // score 9: perfect
+    {
+      min: 9, max: 9,
+      cls: 'eligible',
+      emoji: '🌟',
+      title: 'Excellent — Strong Candidate!',
+      body: 'Your profile scores exceptionally well across all three key CRS factors. You are likely to receive an Invitation to Apply (ITA) under Express Entry in the very near term. We recommend creating your IRCC profile and ensuring your documents are ready to go.'
+    },
+    // score 7–8: high
+    {
+      min: 7, max: 8,
+      cls: 'eligible',
+      emoji: '✅',
+      title: 'Very Likely Eligible',
+      body: 'Your profile is competitive. Most candidates with a similar profile have successfully received ITAs through Federal Skilled Worker (FSW) or Canadian Experience Class (CEC). Boosting your CLB score or gaining Canadian work experience could push your CRS even higher.'
+    },
+    // score 5–6: moderate
+    {
+      min: 5, max: 6,
+      cls: 'partial',
+      emoji: '⚡',
+      title: 'Eligible — With Some Effort',
+      body: 'You meet baseline eligibility requirements, but your CRS score may be below recent cut-offs. Consider Provincial Nominee Programs (PNPs), improving your language scores to CLB 9, or obtaining a job offer from a Canadian employer to add 50–200 bonus points.'
+    },
+    // score 3–4: low
+    {
+      min: 3, max: 4,
+      cls: 'partial',
+      emoji: '⚠️',
+      title: 'Partially Eligible — Improvement Needed',
+      body: 'You may qualify for some pathways, but your current profile will face stiff competition in Express Entry draws. Prioritise improving your English proficiency and, if possible, pursue postgraduate education in Canada. A PNP stream may also be a strategic alternative.'
+    },
+    // score 0–2: weak
+    {
+      min: 0, max: 2,
+      cls: 'ineligible',
+      emoji: '🔴',
+      title: 'Not Likely Eligible at This Time',
+      body: 'Based on your current profile, meeting Express Entry eligibility thresholds will be challenging. Focus on upgrading your educational credentials, achieving CLB 7+ in all language bands, or exploring study-permit or work-permit pathways that can build Canadian experience over time.'
+    }
+  ];
+
+  /* ── Calculate & display ─────────────────────────────── */
+  window.cprCalculate = function () {
+    const a = val('cprAge'), e = val('cprEdu'), l = val('cprEng');
+    if (a === null || e === null || l === null) return;
+
+    const score = a + e + l;
+    const outcome = outcomes.find(o => score >= o.min && score <= o.max);
+
+    const resultEl = document.getElementById('cprResult');
+    resultEl.className = 'cpr-result ' + outcome.cls;
+    document.getElementById('cprEmoji').textContent        = outcome.emoji;
+    document.getElementById('cprResultTitle').textContent  = outcome.title;
+    document.getElementById('cprResultBody').textContent   = outcome.body;
+    resultEl.style.display = 'block';
+
+    // smooth scroll into view on mobile
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
+})();
+</script>
+
+</body>
+</html>
